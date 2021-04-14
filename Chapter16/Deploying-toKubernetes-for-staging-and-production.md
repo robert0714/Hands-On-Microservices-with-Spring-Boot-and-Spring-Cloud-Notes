@@ -183,6 +183,16 @@ kubectl get pods -o json | jq .items[].spec.containers[].image
 ```
 The response should look something like the following:
 ```
+$ kubectl get pods -o json | jq .items[].spec.containers[].image
+"hands-on/auth-server:v1"
+"hands-on/config-server:v1"
+"hands-on/gateway:v1"
+"hands-on/product-service:v1"
+"hands-on/product-composite-service:v1"
+"hands-on/recommendation-service:v1"
+"hands-on/review-service:v1"
+"openzipkin/zipkin:2.12.9"
+
 ```
 Note the ***v1*** version of the Docker images!
 
