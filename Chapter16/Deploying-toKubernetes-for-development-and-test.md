@@ -5,7 +5,7 @@
     - [3. Changes in the test script for use with Kubernetes](#3-changes-in-the-test-script-for-use-with-kubernetes)
       - [3.1. Reaching the internal actuator endpoint using Docker Compose](##-31-reaching-the-internal-actuator-endpoint-using-docker-compose)
       - [3.2. Reaching the internal actuator endpoint using Kubernetes](##-32-reaching-the-internal-actuator-endpoint-using-kubernetes)
-      - [3.3. Choosing between Docker Compose and Kubernetes](##33-choosing-between-docker-compose-and-kubernetes)
+      - [3.3. Choosing between Docker Compose and Kubernetes](#33-choosing-between-docker-compose-and-kubernetes)
     - [4. Testing the deployment](#4-Testing-the-deployment)
 
 <!-- /MarkdownTOC -->
