@@ -109,3 +109,34 @@ and also reported to be healthy when a new pod was launched (wg25r). After a whi
 in my case), it is reported as up and running as well. During a certain time period, both
 pods will be up and running and processing requests. After a while, the first pod is
 terminated (44 minutes, in my case).
+
+When looking at the ***siege*** output, we can sometimes find a few errors being reported in
+terms of the ***503*** service unavailable errors:
+```bash
+HTTP/1.1 200   0.05 secs:    1353 bytes ==> GET  /actuator/health
+HTTP/1.1 503   0.08 secs:    1868 bytes ==> GET  /actuator/health
+HTTP/1.1 503   0.08 secs:    1868 bytes ==> GET  /actuator/health
+HTTP/1.1 200   0.05 secs:    1353 bytes ==> GET  /actuator/health
+```
+This typically happens when the old pod is terminated. Before the old pod is reported
+unhealthy by the readiness probe, it can receive a few requests during its termination, that
+is, when it is no longer capable of serving any requests.
+
+- In Chapter 18, Using a Service Mesh to Improve Observability and
+Management, we will see how we can set up routing rules that move traffic
+in a smoother way from an old pod to a newer one without causing 503
+errors. We will also see how we can apply retry mechanisms to stop
+temporary failures from reaching an end user.
+
+Wrap this up by verifying that the pod is using the new v2 version of the Docker image:
+```
+kubectl get pod -l app=product -o jsonpath='{.items[*].spec.containers[*].image} '
+```
+
+The expected output reveals that v2 of the Docker image is in use:
+```
+$ kubectl get pod -l app=product -o jsonpath='{.items[*].spec.containers[*].image} '
+hands-on/product-service:v2
+```
+After performing this upgrade, we can move on to learning what happens when things fail.
+In the next section, we will see how we can roll back a failed deployment.
