@@ -43,12 +43,34 @@ with another tag than the existing one will start up a rolling upgrade.
 To be able to observe whether any downtime occurs during the upgrade, we will start a
 low volume load test using siege. The following command starts a load test that simulates
 one user (***-c1***) that submits one request per second on average (***-d1***):
+Mac / Linux  
 ```
 siege https://$(minikube ip):31443/actuator/health -c1 -d1
+```
+windows(https://github.com/ewwink/siege-windows)
+C:\Users\YOUR-USERNAME\.siegerc (Windows )
+```
+verbose = true
+color = on
+quiet = false
+show-logfile = true
+logging = false
+limit = 3000
+protocol = HTTP/1.1
+chunked = true
+cache = false
+concurrent = 3000
+connection = close
 ```
 Since the test calls the gateways health endpoint, it verifies that all the services are healthy.
 
 You should receive an output that looks similar to the following screenshot:
 
 ```
+```
+The interesting part in the response is the HTTP status code, which we expect to be 200 at
+all times.
+Also, monitor changes to the state of the product pods with the following command:
+```
+kubectl get pod -l app=product -w
 ```
