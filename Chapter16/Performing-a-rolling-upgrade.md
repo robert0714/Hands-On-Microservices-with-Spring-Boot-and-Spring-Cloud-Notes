@@ -67,6 +67,9 @@ Since the test calls the gateways health endpoint, it verifies that all the serv
 You should receive an output that looks similar to the following screenshot:
 
 ```
+HTTP/1.1 200   0.10 secs:    1353 bytes ==> GET  /actuator/health
+HTTP/1.1 200   0.06 secs:    1353 bytes ==> GET  /actuator/health
+HTTP/1.1 200   0.07 secs:    1353 bytes ==> GET  /actuator/health
 ```
 The interesting part in the response is the HTTP status code, which we expect to be 200 at
 all times.
