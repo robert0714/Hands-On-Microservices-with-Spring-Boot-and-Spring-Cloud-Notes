@@ -1,7 +1,21 @@
+<!-- MarkdownTOC -->
+- [Deploying to Kubernetes for development and test](#deploying-to-kubernetes-for-development-and-test)
+    - [1. Building Docker images](##1-building-docker-images)
+    - [2. Deploying to Kubernetes](##2-changes-in-the-source-code)
+    - [3. Changes in the test script for use with Kubernetes](##3-changes-in-the-test-script-for-use-with-kubernetes)
+      - [3.1. Reaching the internal actuator endpoint using Docker Compose](###-31-reaching-the-internal-actuator-endpoint-using-docker-compose)
+      - [3.2. Reaching the internal actuator endpoint using Kubernetes](###-32-reaching-the-internal-actuator-endpoint-using-kubernetes)
+      - [3.3. Choosing between Docker Compose and Kubernetes](###-33-choosing-between-docker-compose-and-kubernetes)
+    - [4. Testing the deployment](##4-Testing-the-deployment)
+
+<!-- /MarkdownTOC -->
+
 # Deploying to Kubernetes for development and test
+
 page 435
 
-## Building Docker images
+## 1. Building Docker images
+
 In our case, where we have a local single node cluster, we can
 shortcut this process by pointing our Docker client to the Docker engine in ***Minikube*** and
 then run the ***docker-compose build*** command.
@@ -18,7 +32,7 @@ eval $(minikube docker-env)
 ./gradlew build && docker-compose build
 ```
 
-## Deploying to Kubernetes
+## 2. Deploying to Kubernetes
 
 Create a namespace, ***hands-on***, and set it as the default namespace for kubectl:
 ```bash
@@ -85,7 +99,8 @@ We are now ready to test our deployment!
 But before we can do that, we need to go through changes that are required in the test script
 for use with Kubernetes.
 
-## Changes in the test script for use with Kubernetes
+## 3. Changes in the test script for use with Kubernetes
+
 To test the deployment we will, as usual, run the test script, that is, ***test-em-all.bash***. To
 work with Kubernetes, the circuit breaker tests have been slightly modified. Take a look at
 the ***testCircuitBreaker()*** function for more details. The circuit breaker tests call
@@ -97,14 +112,18 @@ endpoints when using Docker Compose and Kubernetes:
 1. When using Docker Compose, the test script will launch a Docker container using a plain ***docker run*** command that calls the ***actuator*** endpoints from the inside of the network created by Docker Compose.  
 2. When using Kubernetes, the test script will launch a Kubernetes pod that it can use to run the corresponding commands inside Kubernetes.
 Let's see how this is done when using Docker Compose and Kubernetes.
-### Reaching the internal actuator endpoint using Docker Compose
+
+### 3.1. Reaching the internal actuator endpoint using Docker Compose
+
 The base command that's defined for Docker Compose is as follows:
 ```
 EXEC="docker run --rm -it --network=my-network alpine"
 ```
 Note that the container will be killed using the --rm switch after each execution of a test
 command.
-### Reaching the internal actuator endpoint using Kubernetes
+
+### 3.2. Reaching the internal actuator endpoint using Kubernetes
+
 Since launching a pod in Kubernetes is slower than starting a container, the test script will
 launch a single pod, ***alpine-client***. The pod will be launched at the start
 of the ***testCircuitBreaker()*** function, and the tests will use the ***kubectl exec***
@@ -131,7 +150,8 @@ At the end of the circuit breaker tests, the pod is deleted by using the followi
 kubectl -n $ns delete pod alpine-client --grace-period=1
 ```
 
-### Choosing between Docker Compose and Kubernetes
+### 3.3. Choosing between Docker Compose and Kubernetes
+
 To make the test script work with both Docker Compose and Kubernetes, it assumes that
 Docker Compose will be used if the ***HOST*** environment variable is set to ***localhost***;
 otherwise, it assumes that Kubernetes will be used. See the following code:
@@ -160,7 +180,8 @@ The test starts by verifying that the circuit breaker is closed with the followi
 A final change in the test script occurs because our services are now reachable on
 the ***80*** port inside the cluster; that is, they are no longer on the ***8080*** port.
 
-## Testing the deployment
+## 4. Testing the deployment
+
 When launching the test script, we have to give it the address of the host that runs
 Kubernetes, that is, our Minikube instance, and the external port where our gateway service
 listens for external requests. The ***minikube ip*** command can be used to find the IP
