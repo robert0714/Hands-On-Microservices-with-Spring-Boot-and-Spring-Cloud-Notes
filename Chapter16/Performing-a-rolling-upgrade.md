@@ -22,8 +22,6 @@ then start up a test client, ***siege***, that will submit one request per secon
 upgrade. The assumption is that the test client will report 200 (OK) for all the requests that
 it sends during the upgrade.
 ## Preparing the rolling upgrade
-
-## Upgrading the product service from v1 to v2
 To prepare for the rolling upgrade, first, verify that we have the v1 version of the product pod deployed:
 ```bash
 kubectl get pod -l app=product -o jsonpath='{.items[*].spec.containers[*].image} '
@@ -77,3 +75,37 @@ Also, monitor changes to the state of the product pods with the following comman
 ```
 kubectl get pod -l app=product -w
 ```
+
+## Upgrading the product service from v1 to v2
+To upgrade the product service, edit the ***kubernetes/services/overlays/prod/product-prod.yml*** file and change ***image:hands-on/product-service:v1*** to ***image: hands-on/product-service:v2***.
+Apply the update with the following command:
+```
+kubectl apply -k kubernetes/services/overlays/prod
+```
+Expect a response from the command that reports that most of the objects are left
+unchanged, except for the product deployment that should be reported to be updated
+to ***deployment.apps/product configured*** .
+
+- Kubernetes comes with some shorthand commands. For example, ***kubectl set image deployment/product pro=hands-on/product-service:v2*** can be used to perform the same update that we did by updating the definitions file and running the ***kubectl apply*** command. A major benefit of using the kubectl apply command
+is that we can keep track of the changes by pushing the changes in the source code to a version control system such as Git. This is very important if we want to be able to handle our infrastructure as code. When playing around with a Kubernetes cluster, only use it to test shorthand commands, as this can be very useful.
+
+In the output from the ***kubectl get pod -l app=product -w*** command we launched in the ***Preparing the rolling upgrade*** section, we will see some action occurring. Take a look at the following screenshot:
+```
+$ kubectl get pod -l app=product -w
+NAME                       READY   STATUS    RESTARTS   AGE
+product-66ccc8f4b9-jfxhd   1/1     Running   0          39m
+product-57fdd4dd94-wg25r   0/1     Pending   0          0s
+product-57fdd4dd94-wg25r   0/1     Pending   0          0s
+product-57fdd4dd94-wg25r   0/1     ContainerCreating   0          0s
+product-57fdd4dd94-wg25r   0/1     Running             0          2s
+product-57fdd4dd94-wg25r   1/1     Running             0          24s
+product-66ccc8f4b9-jfxhd   1/1     Terminating         0          44m
+product-66ccc8f4b9-jfxhd   0/1     Terminating         0          44m
+product-66ccc8f4b9-jfxhd   0/1     Terminating         0          45m
+product-66ccc8f4b9-jfxhd   0/1     Terminating         0          45m
+```
+Here, we can see how the existing pod (jfxhd) initially reported that it was up and running
+and also reported to be healthy when a new pod was launched (wg25r). After a while (24s,
+in my case), it is reported as up and running as well. During a certain time period, both
+pods will be up and running and processing requests. After a while, the first pod is
+terminated (44 minutes, in my case).
